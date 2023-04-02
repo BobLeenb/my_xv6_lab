@@ -432,3 +432,43 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+//
+void vmprint(pagetable_t pagetable)
+{
+  printf("page table %p\n", pagetable);
+  //char* prex = " ..";
+  vmprintlevel(pagetable, 2);
+}
+
+void vmprintlevel(pagetable_t pagetable, int level)
+{
+  
+  //增加前缀
+  char *prex;
+  if (level==2)
+    prex = " ..";
+  else if(level==1)
+    prex = " .. ..";
+  else if(level==0)
+    prex = " .. .. ..";
+  else{
+    prex = "";
+    return;
+  }
+    --level;
+    
+    for(int i=0; i < 512; i++)
+    {
+      pte_t pte = pagetable[i];
+      if(pte & PTE_V)
+      {
+        //pte有效的时候,递归
+        uint64 child = PTE2PA(pte);
+        //printf(" ..");
+        printf("%s%d: pte %p pa %p\n",prex,i, pte, child);
+        vmprintlevel((pagetable_t)child, level);
+      }
+    }
+
+}
